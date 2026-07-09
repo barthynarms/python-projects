@@ -2,26 +2,24 @@ import numpy as np
 
 print("Welcome to the calculator!")
 
-def add(a, b):
-    return a + b
+def add(a, b, c):
+    return a + b + c
 
-def subtract(a, b):
-    return a - b
+def subtract(a, b, c):
+    return a - b - c
 
-def multiply(a, b):
-    return a * b
+def multiply(a, b, c):
+    return a * b * c
 
 def divide(a, b):
-    if b == 0:
-        return "error: cannot divide by zero"
+    if a == 0:
+        return "expression undefine"
     else:
-        return a / b
+        return b / a
     
 def sqrt(a):
-    if a < 0:
-        return "error: cannot take square root of negative number"
-    elif a == 0:
-        return "error: cannot take square root of zero"
+    if a <= 0:
+        return "error: cannot take negative number and zero sqrt"
     else:
         return np.sqrt(a)
 
@@ -37,13 +35,16 @@ op = input("choose operation (+, -, *, /, sqrt, sqr, power): ")
 num2 = None
 if op != "sqrt" and op != "sqr":
     num2 = float(input("Enter second number: "))
+    op = input("choose operation (+, -, *, /, power): ")   
+elif op != "power" and op != "divide":
+    num3 = float(input("enter third number: "))
 
 if op == "+":
-    result = add(num1, num2)
+    result = add(num1, num2, num3)
 elif op == "-":
-    result = subtract(num1, num2)
+    result = subtract(num1, num2, num3)
 elif op == "*":
-    result = multiply(num1, num2)
+    result = multiply(num1, num2, num3)
 elif op == "/":
     result = divide(num1, num2)
 elif op == "sqrt":
@@ -66,11 +67,11 @@ while recalculate.lower() == "yes":
         num2 = float(input("Enter second number: "))
 
     if op == "+":
-        result = add(num1, num2)
+        result = add(num1, num2, num3)
     elif op == "-":
-        result = subtract(num1, num2)
+        result = subtract(num1, num2, num3)
     elif op == "*":
-        result = multiply(num1, num2)
+        result = multiply(num1, num2, num3)
     elif op == "/":
         result = divide(num1, num2)
     elif op == "sqrt":
@@ -89,3 +90,4 @@ while recalculate.lower() == "yes":
     else:
         if recalculate.lower() != "no" and recalculate.lower() != "yes":
             print("Invalid input. Exiting the calculator.")
+
