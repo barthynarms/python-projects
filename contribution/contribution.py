@@ -53,8 +53,10 @@ while True:
     print("\n1. Add contribution")
     print("2. Show progress")
     print("3. Show contributor list")
-    print("4. Exit")
-    choice = input("Choose an option (1-4): ").strip()
+    print("4. Eidt a contribution")
+    print("5. Delete a contribution")
+    print("6. Exit")
+    choice = input("select an option (1-6): ").strip()
 
     if choice == "1":
         name = input("Contributor name: ").strip()
@@ -77,8 +79,48 @@ while True:
 
     elif choice == "3":
         show_list()
+    
+    elif choice == "4"
+        if not contributions:
+            print("No contributor to edit.")
+            continue
+        show_list()
+        try:
+            index = int(input("Enter the number of the entry to edit: ").strip())
+        except ValueError:
+            print("Please enter a valid number.")
+            continue
+        if index < 1 or index > len(contributions):
+            print("The entry doesn't")
+            continue
+        old_name, old_name = contributions[index - 1]
+        print(f"Editing entry {index}: {old_name} - ₦{old_amount:,.2f}")
 
-    elif choice == "4":
+        new_name = input(f"New name (leave blank to keep '{old_name}'): ").strip()
+        if new_name == "":
+            new_name = old_name
+        
+        new_amount_input = input(f"New amount(leave blank to keep ₦{old_amount:,.2f})").strip()
+        if new_amount_input == "":
+            new_amount = old_amount
+        else:
+            try:
+                new_amount = float(new_amount_input)
+                if new_amount <= 0:
+                    print("Amount must be greater than 0. Edit cancelled.")
+                    continue
+            except ValueError:
+                print("Invalid amount. Edit cancelled.")
+                continue
+    
+    raised -= old_amount
+    raised += new_amount
+    contributions[index - 1] = (new_name, new_amount)
+    save_data(contributions)
+    print(f"✅ Entry {index} updated: {new_name} - ₦{new_amount:,.2f}")
+        
+
+    elif choice == "6":
         print("Exiting... Final summary:")
         show_progress()
         break
