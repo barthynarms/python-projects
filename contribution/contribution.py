@@ -118,7 +118,23 @@ while True:
     contributions[index - 1] = (new_name, new_amount)
     save_data(contributions)
     print(f"✅ Entry {index} updated: {new_name} - ₦{new_amount:,.2f}")
-        
+    
+    elif choice == "5":
+        if not contributions:
+            print("No contributions to delete.")
+            continue
+        show_list()
+        try:
+            index = int(input("Enter the number of the entry to delete: ").strip())
+        except ValueError:
+            print("Please enter a valid number.")
+            continue
+        if index < 1 or index > len(contributions):
+            print("That entry number doesn't exist.")
+            continue
+        name, amount = contributions[index - 1]
+        confirm = input (f"")
+
 
     elif choice == "6":
         print("Exiting... Final summary:")
