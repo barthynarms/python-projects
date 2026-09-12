@@ -1,15 +1,31 @@
+import json
+import os
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(SCRIPT_DIR, "contributions.json")
 target = 500000
-raised = 0
-contributions = []  # stores (name, amount) pairs
+
+def load_data():
+    """Load saved contributions from file, if it exists."""
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return []  # no file yet, start empty
+
+def save_data(contributions):
+    """Save the current contributions list to file."""
+    with open(DATA_FILE, "w") as f:
+        json.dump(contributions, f, indent=2)
+
+contributions = load_data()
+raised = sum(amount for name, amount in contributions)
 
 def show_progress():
     remaining = target - raised
     percent = (raised / target) * 100
-    
     bar_length = 30
     filled = int(bar_length * raised / target)
-    bar = "█" * filled + "░" * (bar_length - filled) #Linux
+    bar = "\u2588" * filled + "\u2591" * (bar_length - filled)
 
     print("\n" + "=" * 45)
     print("       CONTRIBUTION PROGRESS TRACKER")
@@ -18,7 +34,6 @@ def show_progress():
     print(f"Amount Raised      : ₦{raised:,.2f}")
     print(f"Remaining          : ₦{remaining:,.2f}")
     print(f"Total Members      : {len(contributions)}")
-    
     if contributions:
         avg = raised / len(contributions)
         print(f"Average/Member     : ₦{avg:,.2f}")
@@ -54,8 +69,8 @@ while True:
 
         raised += amount
         contributions.append((name, amount))
+        save_data(contributions)
         print(f"✅ Added ₦{amount:,.2f} from {name}")
-        
 
     elif choice == "2":
         show_progress()
@@ -68,5 +83,5 @@ while True:
         show_progress()
         break
 
-    else:4
+    else:
         print("Invalid option, please choose 1-4.")

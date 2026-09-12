@@ -2,7 +2,7 @@ Project Background
 
 Contribution Tracker is a simple command-line application built in Python to help groups manage and monitor collective fundraising efforts.
 
-The project was created to track a group contribution drive with a target goal of ₦50,000, contributed to by a group of members. Rather than manually tallying contributions on paper or in a spreadsheet, this tool allows an organizer to:
+The project was created to track a group contribution drive with a target goal of ₦500,000, contributed to by a group of members. Rather than manually tallying contributions on paper or in a spreadsheet, this tool allows an organizer to:
 
 Log each member's contribution as it comes in (name and amount)
 View real-time progress toward the fundraising target, including a visual progress bar
