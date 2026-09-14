@@ -80,7 +80,7 @@ while True:
     elif choice == "3":
         show_list()
     
-    elif choice == "4"
+    elif choice == "4":
         if not contributions:
             print("No contributor to edit.")
             continue
@@ -93,7 +93,7 @@ while True:
         if index < 1 or index > len(contributions):
             print("The entry doesn't")
             continue
-        old_name, old_name = contributions[index - 1]
+        old_name, old_amount = contributions[index - 1]
         print(f"Editing entry {index}: {old_name} - ₦{old_amount:,.2f}")
 
         new_name = input(f"New name (leave blank to keep '{old_name}'): ").strip()
@@ -113,16 +113,17 @@ while True:
                 print("Invalid amount. Edit cancelled.")
                 continue
     
-    raised -= old_amount
-    raised += new_amount
-    contributions[index - 1] = (new_name, new_amount)
-    save_data(contributions)
-    print(f"✅ Entry {index} updated: {new_name} - ₦{new_amount:,.2f}")
+        raised -= old_amount
+        raised += new_amount
+        contributions[index - 1] = (new_name, new_amount)
+        save_data(contributions)
+        print(f"✅ Entry {index} updated: {new_name} - ₦{new_amount:,.2f}")
     
     elif choice == "5":
         if not contributions:
             print("No contributions to delete.")
             continue
+
         show_list()
         try:
             index = int(input("Enter the number of the entry to delete: ").strip())
@@ -132,8 +133,16 @@ while True:
         if index < 1 or index > len(contributions):
             print("That entry number doesn't exist.")
             continue
+
         name, amount = contributions[index - 1]
-        confirm = input (f"")
+        confirm = input (f"Delete '{name} - ₦{amount:,.2f}'? (y/n): ").strip().lower()
+        if confirm != "y":
+            print("Delete cancelled.")
+            continue
+        raised -= amount
+        contributions.pop(index - 1)
+        save_data(contributions)
+        print(f"🗑️ Deleted entry: {name} - ₦{amount:,.2f}")
 
 
     elif choice == "6":
@@ -142,4 +151,4 @@ while True:
         break
 
     else:
-        print("Invalid option, please choose 1-4.")
+        print("Invalid option, please choose 1-6.")
