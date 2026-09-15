@@ -77,10 +77,16 @@ while True:
             print("2. Add this amount to their existing entry")
             print(" 3. Cancel")
             dup_choice = input("Choose an option (1-3)").strip()
+
             if dup_choice == "3":
                 print("Cancelled.")
                 continue
-            if dup_choice == 
+            elif dup_choice not in ("1","2"):
+                print("Invalid choice. Cancelled.")
+                continue
+            else:
+                dup_choice = "1"
+                # no duplicate, proceed normally
 
         try:
             amount = float(input("Amount contributed: ₦").strip())
@@ -92,10 +98,18 @@ while True:
             continue
 
         raised += amount
-        contributions.append((name, amount))
-        save_data(contributions)
-        print(f"✅ Added ₦{amount:,.2f} from {name}")
+        # merge into the first existing entry for this name
+        if dup_choice == "2":
+            target_index = existing_indexes[0]
+            old_name, old_amount = contributions[target_index]
+            new_total = old_amount + amount
+            contributions[target_index] = (old_name, new_total)
+            print(f"✅ Added ₦{amount:,.2f} to {old_name}'s entry (new total: ₦{new_total:,.2f})")
+        else:
+            contributions.append((name, amount))
+            print(f"✅ Added ₦{amount:,.2f} from {name}")
 
+        save_data(contributions)
     elif choice == "2":
         show_progress()
 
