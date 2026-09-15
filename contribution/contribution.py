@@ -25,10 +25,10 @@ def show_progress():
     percent = (raised / target) * 100
     bar_length = 30
     filled = int(bar_length * raised / target)
-    bar = "\u2588" * filled + "\u2591" * (bar_length - filled)
+    bar = "█" * filled + "░" * (bar_length - filled)
 
     print("\n" + "=" * 45)
-    print("       CONTRIBUTION PROGRESS TRACKER")
+    print("       CONTRIBUTION PROGRESS TRACKER    ")
     print("=" * 45)
     print(f"Target Amount      : ₦{target:,.2f}")
     print(f"Amount Raised      : ₦{raised:,.2f}")
@@ -60,6 +60,28 @@ while True:
 
     if choice == "1":
         name = input("Contributor name: ").strip()
+
+        #check for existing of entries with the same name
+        existing_indexes = [
+            i for i, (n, amt) in enumerate(contributions)
+            if n.strip().lower() == name.lower()
+        ]
+
+        if existing_indexes:
+            print(f"⚠️ '{name} already has {len(existing_indexes)} entry(ies):")
+            for i in existing_indexes:
+                n, amt = contributions[i]
+                print(f" -{n}: ₦{amt:,.2f}")
+            print("\nWhat would you like to do?")
+            print("1. Add as a new/separate entry anyway")
+            print("2. Add this amount to their existing entry")
+            print(" 3. Cancel")
+            dup_choice = input("Choose an option (1-3)").strip()
+            if dup_choice == "3":
+                print("Cancelled.")
+                continue
+            if dup_choice == 
+
         try:
             amount = float(input("Amount contributed: ₦").strip())
             if amount <= 0:
