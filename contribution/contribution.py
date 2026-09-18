@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(SCRIPT_DIR, "contributions.json")
@@ -12,13 +13,28 @@ def load_data():
             return json.load(f)
     return []  # no file yet, start empty
 
+    upgraded = []
+    for entry in data:
+        if isinstance(entry, dict):
+            upgraded.append(entry)
+        else:
+            #old format: [name, amount] with no date - add a placeholder date
+            name,amount = entry
+            upgraded.append({"name": name, "amount": amount, "date": unknown})
+    return upgraded
+
+
 def save_data(contributions):
     """Save the current contributions list to file."""
     with open(DATA_FILE, "w") as f:
         json.dump(contributions, f, indent=2)
 
+def now_string():
+    """ return the current date and time as a readable string."""
+    return datetime.now().strftime("%I:%M %p %d/%m/%Y")
+
 contributions = load_data()
-raised = sum(amount for name, amount in contributions)
+raised = sum(entry["amount"] for entry in contributions)
 
 def show_progress():
     remaining = target - raised
@@ -46,8 +62,8 @@ def show_list():
     if not contributions:
         print("No contributions yet.")
     for i, (name, amt) in enumerate(contributions, start=1):
-        print(f"{i}. {name} - ₦{amt:,.2f}")
-    print("-" * 26)
+        print(f"{i}. {entry['name']} - ₦{entry['amount']:,.2f} ({entry['date']})")
+    print("-" * 40)
 
 while True:
     print("\n1. Add contribution")
@@ -98,16 +114,20 @@ while True:
             continue
 
         raised += amount
+        timestamp = now_string()
+
         # merge into the first existing entry for this name
         if dup_choice == "2":
             target_index = existing_indexes[0]
-            old_name, old_amount = contributions[target_index]
-            new_total = old_amount + amount
-            contributions[target_index] = (old_name, new_total)
-            print(f"✅ Added ₦{amount:,.2f} to {old_name}'s entry (new total: ₦{new_total:,.2f})")
+            entry = contributions[target_index]
+            entry["amount"] += amount
+            #update to the most recent contributiondate 
+            entry["date"] = timestamp
+
+            print(f"✅ Added ₦{amount:,.2f} to {entry['name']}'s entry (new total: ₦{entry['amount']:,.2f})")
         else:
-            contributions.append((name, amount))
-            print(f"✅ Added ₦{amount:,.2f} from {name}")
+            contributions.append({"name": name, "amount": amount "date": timestamp})
+            print(f"✅ Added ₦{amount:,.2f} from {name} on {timestamp}")
 
         save_data(contributions)
     elif choice == "2":
@@ -120,6 +140,7 @@ while True:
         if not contributions:
             print("No contributor to edit.")
             continue
+
         show_list()
         try:
             index = int(input("Enter the number of the entry to edit: ").strip())
@@ -129,16 +150,17 @@ while True:
         if index < 1 or index > len(contributions):
             print("The entry doesn't")
             continue
-        old_name, old_amount = contributions[index - 1]
-        print(f"Editing entry {index}: {old_name} - ₦{old_amount:,.2f}")
 
-        new_name = input(f"New name (leave blank to keep '{old_name}'): ").strip()
+        entry = contributions[index - 1]
+        print(f"Editing entry {index}: {entry['name']} - ₦{entry['amount']:,.2f} ({entry['date']})")
+
+        new_name = input(f"New name (leave blank to keep '{entry['name']}'): ").strip()
         if new_name == "":
-            new_name = old_name
+            new_name = entry["name"]
         
-        new_amount_input = input(f"New amount(leave blank to keep ₦{old_amount:,.2f})").strip()
+        new_amount_input = input(f"New amount(leave blank to keep ₦{entry['amount']:,.2f})").strip()
         if new_amount_input == "":
-            new_amount = old_amount
+            new_amount = entry["amount"]
         else:
             try:
                 new_amount = float(new_amount_input)
@@ -149,9 +171,11 @@ while True:
                 print("Invalid amount. Edit cancelled.")
                 continue
     
-        raised -= old_amount
+        raised -= entry["amount"]
         raised += new_amount
-        contributions[index - 1] = (new_name, new_amount)
+        entry["name"] = new_name
+        entry["amount"] = new_amount
+        entry["date"] = now_string()
         save_data(contributions)
         print(f"✅ Entry {index} updated: {new_name} - ₦{new_amount:,.2f}")
     
@@ -170,15 +194,15 @@ while True:
             print("That entry number doesn't exist.")
             continue
 
-        name, amount = contributions[index - 1]
-        confirm = input (f"Delete '{name} - ₦{amount:,.2f}'? (y/n): ").strip().lower()
+        entry = contributions[index - 1]
+        confirm = input (f"Delete '{entry['name']} - ₦{entry['amount']:,.2f}'? (y/n): ").strip().lower()
         if confirm != "y":
             print("Delete cancelled.")
             continue
-        raised -= amount
+        raised -= entry["amount"]
         contributions.pop(index - 1)
         save_data(contributions)
-        print(f"🗑️ Deleted entry: {name} - ₦{amount:,.2f}")
+        print(f"🗑️ Deleted entry: {entry['name']} - ₦{entry['amount']:,.2f}")
 
 
     elif choice == "6":
