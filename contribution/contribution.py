@@ -7,20 +7,23 @@ DATA_FILE = os.path.join(SCRIPT_DIR, "contributions.json")
 target = 500000
 
 def load_data():
-    """Load saved contributions from file, if it exists."""
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    return []  # no file yet, start empty
-
+    """Load saved contributions from file, if it exists.
+    Also upgrades old-format entries (plain [name, amount] pairs)
+    to the new dictionary format so old data files still work."""
+    if not os.path.exists(DATA_FILE):
+        return []  # no file yet, start empty
+ 
+    with open(DATA_FILE, "r") as f:
+        data = json.load(f)
+ 
     upgraded = []
     for entry in data:
         if isinstance(entry, dict):
             upgraded.append(entry)
         else:
-            #old format: [name, amount] with no date - add a placeholder date
-            name,amount = entry
-            upgraded.append({"name": name, "amount": amount, "date": unknown})
+            # old format: [name, amount] with no date - add a placeholder date
+            name, amount = entry
+            upgraded.append({"name": name, "amount": amount, "date": "unknown"})
     return upgraded
 
 
@@ -61,49 +64,52 @@ def show_list():
     print("\n--- Contribution List ---")
     if not contributions:
         print("No contributions yet.")
-    for i, (name, amt) in enumerate(contributions, start=1):
-        print(f"{i}. {entry['name']} - ₦{entry['amount']:,.2f} ({entry['date']})")
-    print("-" * 40)
+    for i, entry in enumerate(contributions, start=1):
+        num = f"{i}."
+        name = entry["name"]
+        amount_str = f"₦{entry['amount']:,.2f}"
+        print(f"{num:<4}{name:<22}{amount_str:<15}{entry['date']}")
+    print("-" * 60)
 
 while True:
     print("\n1. Add contribution")
     print("2. Show progress")
     print("3. Show contributor list")
-    print("4. Eidt a contribution")
+    print("4. Edit contribution")
     print("5. Delete a contribution")
     print("6. Exit")
-    choice = input("select an option (1-6): ").strip()
+    choice = input("\nSelect option (1-6): ").strip()
 
     if choice == "1":
         name = input("Contributor name: ").strip()
-
-        #check for existing of entries with the same name
+ 
+        # check for existing entries with the same name (case-insensitive)
         existing_indexes = [
-            i for i, (n, amt) in enumerate(contributions)
-            if n.strip().lower() == name.lower()
+            i for i, entry in enumerate(contributions)
+            if entry["name"].strip().lower() == name.lower()
         ]
-
+ 
         if existing_indexes:
-            print(f"⚠️ '{name} already has {len(existing_indexes)} entry(ies):")
+            print(f"⚠️  '{name}' already has {len(existing_indexes)} entry(ies):")
             for i in existing_indexes:
-                n, amt = contributions[i]
-                print(f" -{n}: ₦{amt:,.2f}")
+                e = contributions[i]
+                print(f"   - {e['name']}: ₦{e['amount']:,.2f}  ({e['date']})")
+ 
             print("\nWhat would you like to do?")
             print("1. Add as a new/separate entry anyway")
             print("2. Add this amount to their existing entry")
-            print(" 3. Cancel")
-            dup_choice = input("Choose an option (1-3)").strip()
-
+            print("3. Cancel")
+            dup_choice = input("Choose an option (1-3): ").strip()
+ 
             if dup_choice == "3":
                 print("Cancelled.")
                 continue
-            elif dup_choice not in ("1","2"):
+            elif dup_choice not in ("1", "2"):
                 print("Invalid choice. Cancelled.")
                 continue
-            else:
-                dup_choice = "1"
-                # no duplicate, proceed normally
-
+        else:
+            dup_choice = "1"  # no duplicate, proceed normally
+ 
         try:
             amount = float(input("Amount contributed: ₦").strip())
             if amount <= 0:
@@ -112,24 +118,23 @@ while True:
         except ValueError:
             print("Invalid amount. Please enter a number.")
             continue
-
+ 
         raised += amount
         timestamp = now_string()
-
-        # merge into the first existing entry for this name
+ 
         if dup_choice == "2":
+            # merge into the first existing entry for this name
             target_index = existing_indexes[0]
             entry = contributions[target_index]
             entry["amount"] += amount
-            #update to the most recent contributiondate 
-            entry["date"] = timestamp
-
+            entry["date"] = timestamp  # update to the most recent contribution date
             print(f"✅ Added ₦{amount:,.2f} to {entry['name']}'s entry (new total: ₦{entry['amount']:,.2f})")
         else:
-            contributions.append({"name": name, "amount": amount "date": timestamp})
+            contributions.append({"name": name, "amount": amount, "date": timestamp})
             print(f"✅ Added ₦{amount:,.2f} from {name} on {timestamp}")
-
+ 
         save_data(contributions)
+
     elif choice == "2":
         show_progress()
 
@@ -207,6 +212,8 @@ while True:
 
     elif choice == "6":
         print("Exiting... Final summary:")
+        show_list()
+       
         show_progress()
         break
 

@@ -1,30 +1,22 @@
 [
-  [
-    "astom jacob",
-    30000.0
-  ],
-  [
-    "ruth akor",
-    34000.0
-  ],
-  [
-    "alice akor",
-    132000.0
-  ],
-  [
-    "ruth tarfa",
-    30000.0
-  ],
-  [
-    "helen ogeh",
-    50000.0
-  ],
-  [
-    "alice akor",
-    30000.0
-  ],
-  [
-    "helen ogeh",
-    52000.0
-  ]
+  {
+    "name": "helen ogeh",
+    "amount": 30000.0,
+    "date": "11:30 AM 18/09/2026"
+  },
+  {
+    "name": "blessing franics",
+    "amount": 38000.0,
+    "date": "11:27 AM 18/09/2026"
+  },
+  {
+    "name": "engr bartholowew",
+    "amount": 200000.0,
+    "date": "11:28 AM 18/09/2026"
+  },
+  {
+    "name": "joy iorfa",
+    "amount": 40000.0,
+    "date": "11:29 AM 18/09/2026"
+  }
 ]
