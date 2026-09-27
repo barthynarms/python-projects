@@ -33,12 +33,21 @@ def sqr(a):
 def power(a, b):
     return a ** b
 
+
+def get_float(prompt):
+    while True:
+        value = input(prompt)
+        try:
+            return float(value)
+        except ValueError:
+            print("Enter a valid number")
+
 # Get input from the user
-num1 = float(input("Enter first number: "))
+num1 = get_float(input("Enter first number: "))
 op = input("choose operation (+, -, *, /, sqrt, sqr, power): ")
 num2 = None
 if op != "sqrt" and op != "sqr":
-    num2 = float(input("Enter second number: "))
+    num2 = get_float(input("Enter second number: "))
 
 def do_calcutation(num1, op,num2):
     if op == "+":
@@ -73,7 +82,7 @@ def show_history():
         print("\n--- Calculation History ---")
         for i, entry in enumerate(history, start=1):
             print(f"{i}. {entry}")
-        print("----------------------------\n")
+        print("\n----------------------------\n")
 result = do_calcutation(num1, op, num2)
 print("Result:", result)
 
@@ -82,11 +91,11 @@ while recalculate.lower() in ("yes", "history"):
     if recalculate.lower() == "history":
         show_history()
     else:
-        num1 = float(input("Enter first number: "))
+        num1 = get_float(input("Enter first number: "))
         op = input("enter operation: ")
         num2 = None
         if op != "sqrt" and op != "sqr":
-            num2 = float(input("Enter first number: "))
+            num2 = get_float(input("Enter first number: "))
         
         result = do_calcutation(num1, op, num2)
         print("Result", result)
