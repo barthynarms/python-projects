@@ -30,24 +30,41 @@ def sqrt(a):
 def sqr(a):
     return a * a
 
+
 def power(a, b):
     return a ** b
 
-
+last_result = None
 def get_float(prompt):
     while True:
         value = input(prompt)
+        if value.strip().lower() == "ans":
+            if isinstance(last_result, (int, float)):
+                print(f"Using ans = {last_result}")
+                return float(last_result)
+            else:
+                print("No previous numeric result to use as ans")
+                continue
+
         try:
             return float(value)
         except ValueError:
             print("Enter a valid number")
 
+def get_operation(prompt):
+    valid_ops = ["+", "-", "*", "/", "sqrt", "sqr", "power"]
+    while True:
+        op = input(prompt)
+        if op in valid_ops:
+            return op
+        print("Enter a valid operation")
+
 # Get input from the user
-num1 = get_float(input("Enter first number: "))
-op = input("choose operation (+, -, *, /, sqrt, sqr, power): ")
+num1 = get_float("Enter first number (or 'ans'): ")
+op = get_operation("choose operation (+, -, *, /, sqrt, sqr, power): ")
 num2 = None
 if op != "sqrt" and op != "sqr":
-    num2 = get_float(input("Enter second number: "))
+    num2 = get_float("Enter second number (or 'ans'): ")
 
 def do_calcutation(num1, op,num2):
     if op == "+":
@@ -79,7 +96,7 @@ def show_history():
     if not history:
         print("No calculations yet.")
     else: 
-        print("\n--- Calculation History ---")
+        print("\n--- Calculation History ---\n")
         for i, entry in enumerate(history, start=1):
             print(f"{i}. {entry}")
         print("\n----------------------------\n")
@@ -91,14 +108,17 @@ while recalculate.lower() in ("yes", "history"):
     if recalculate.lower() == "history":
         show_history()
     else:
-        num1 = get_float(input("Enter first number: "))
-        op = input("enter operation: ")
+        num1 = get_float("Enter first number (or 'ans'): ")
+        op = get_operation("enter operation: ")
         num2 = None
         if op != "sqrt" and op != "sqr":
-            num2 = get_float(input("Enter first number: "))
+            num2 = get_float("Enter first number (or 'ans'): ")
         
         result = do_calcutation(num1, op, num2)
         print("Result", result)
+        if isinstance(result, (int, float)):
+            last_result = result
+
 
     recalculate = input("Do you want to perform another calculation? (yes/no/history): ")
     if recalculate.lower() == "no":
