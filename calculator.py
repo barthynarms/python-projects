@@ -2,6 +2,8 @@ import numpy as np
 
 print("Welcome to the calculator!")
 
+history = []
+
 def add(a, b):
     return a + b
 
@@ -38,33 +40,7 @@ num2 = None
 if op != "sqrt" and op != "sqr":
     num2 = float(input("Enter second number: "))
 
-if op == "+":
-    result = add(num1, num2)
-elif op == "-":
-    result = subtract(num1, num2)
-elif op == "*":
-    result = multiply(num1, num2)
-elif op == "/":
-    result = divide(num1, num2)
-elif op == "sqrt":
-    result = sqrt(num1)
-elif op == "sqr":
-    result = sqr(num1)
-elif op == "power":
-    result = power(num1, num2)
-else:
-    result = "Invalid operation"
-
-print("Result:", result)
-
-recalculate = input("Do you want to perform another calculation? (yes/no): ")
-while recalculate.lower() == "yes":
-    num1 = float(input("Enter first number: "))
-    op = input("enter operation: ")
-    num2 = None
-    if op != "sqrt" and op != "sqr":
-        num2 = float(input("Enter second number: "))
-
+def do_calcutation(num1, op,num2):
     if op == "+":
         result = add(num1, num2)
     elif op == "-":
@@ -81,11 +57,42 @@ while recalculate.lower() == "yes":
         result = power(num1, num2)
     else:
         result = "Invalid operation"
+    
+    if num2 is not None:
+        entry = f"{num1} {op} {num2} = {result}"
+    else:
+        entry = f"{op} {num1} = {result}"
+    history.append(entry)
 
-    print("Result:", result)
-    recalculate = input("Do you want to perform another calculation? (yes/no): ")
-    if recalculate.lower() != "yes":
+    return result
+
+def show_history():
+    if not history:
+        print("No calculations yet.")
+    else: 
+        print("\n--- Calculation History ---")
+        for i, entry in enumerate(history, start=1):
+            print(f"{i}. {entry}")
+        print("----------------------------\n")
+result = do_calcutation(num1, op, num2)
+print("Result:", result)
+
+recalculate = input("Do you want to perform another calculation? (yes/no/history): ")
+while recalculate.lower() in ("yes", "history"):
+    if recalculate.lower() == "history":
+        show_history()
+    else:
+        num1 = float(input("Enter first number: "))
+        op = input("enter operation: ")
+        num2 = None
+        if op != "sqrt" and op != "sqr":
+            num2 = float(input("Enter first number: "))
+        
+        result = do_calcutation(num1, op, num2)
+        print("Result", result)
+
+    recalculate = input("Do you want to perform another calculation? (yes/no/history): ")
+    if recalculate.lower() == "no":
         print("Thank you for using the calculator!")
     else:
-        if recalculate.lower() != "no" and recalculate.lower() != "yes":
-            print("Invalid input. Exiting the calculator.")
+        print("Invalid input. Exiting the calculator.")
