@@ -3,22 +3,28 @@ import numpy as np
 print("Welcome to the calculator!")
 
 history = []
+last_result = None  # stores the most recent numeric result for "ans"
+
 
 def add(a, b):
     return a + b
 
+
 def subtract(a, b):
     return a - b
 
+
 def multiply(a, b):
     return a * b
+
 
 def divide(a, b):
     if b == 0:
         return "error: cannot divide by zero"
     else:
         return a / b
-    
+
+
 def sqrt(a):
     if a < 0:
         return "error: cannot take square root of negative number"
@@ -27,6 +33,7 @@ def sqrt(a):
     else:
         return np.sqrt(a)
 
+
 def sqr(a):
     return a * a
 
@@ -34,8 +41,32 @@ def sqr(a):
 def power(a, b):
     return a ** b
 
-last_result = None
+
+def modulo(a, b):
+    if b == 0:
+        return "error: cannot modulo by zero"
+    else:
+        return a % b
+
+
+def percentage(a, b):
+    return (a / 100) * b
+
+
+def log(a):
+    if a <= 0:
+        return "error: log undefined for zero or negative numbers"
+    else:
+        return np.log10(a)
+
+
+SINGLE_ARG_OPS = ["sqrt", "sqr", "log"]
+VALID_OPS = ["+", "-", "*", "/", "sqrt", "sqr", "power", "%", "percent", "log"]
+
+
 def get_float(prompt):
+    """Keep asking until the user enters a valid number.
+    Typing 'ans' reuses the last numeric result, if one exists."""
     while True:
         value = input(prompt)
         if value.strip().lower() == "ans":
@@ -45,28 +76,22 @@ def get_float(prompt):
             else:
                 print("No previous numeric result to use as ans")
                 continue
-
         try:
             return float(value)
         except ValueError:
             print("Enter a valid number")
 
+
 def get_operation(prompt):
-    valid_ops = ["+", "-", "*", "/", "sqrt", "sqr", "power"]
+    """Keep asking until the user enters a valid operation."""
     while True:
         op = input(prompt)
-        if op in valid_ops:
+        if op in VALID_OPS:
             return op
         print("Enter a valid operation")
 
-# Get input from the user
-num1 = get_float("Enter first number (or 'ans'): ")
-op = get_operation("choose operation (+, -, *, /, sqrt, sqr, power): ")
-num2 = None
-if op != "sqrt" and op != "sqr":
-    num2 = get_float("Enter second number (or 'ans'): ")
 
-def do_calcutation(num1, op,num2):
+def do_calculation(num1, op, num2):
     if op == "+":
         result = add(num1, num2)
     elif op == "-":
@@ -81,9 +106,15 @@ def do_calcutation(num1, op,num2):
         result = sqr(num1)
     elif op == "power":
         result = power(num1, num2)
+    elif op == "%":
+        result = modulo(num1, num2)
+    elif op == "percent":
+        result = percentage(num1, num2)
+    elif op == "log":
+        result = log(num1)
     else:
         result = "Invalid operation"
-    
+
     if num2 is not None:
         entry = f"{num1} {op} {num2} = {result}"
     else:
@@ -92,36 +123,55 @@ def do_calcutation(num1, op,num2):
 
     return result
 
+
 def show_history():
     if not history:
         print("No calculations yet.")
-    else: 
-        print("\n--- Calculation History ---\n")
+    else:
+        print("\n--- Calculation History ---")
         for i, entry in enumerate(history, start=1):
             print(f"{i}. {entry}")
-        print("\n----------------------------\n")
-result = do_calcutation(num1, op, num2)
-print("Result:", result)
+        print("----------------------------\n")
 
-recalculate = input("Do you want to perform another calculation? (yes/no/history): ")
-while recalculate.lower() in ("yes", "history"):
+
+def clear_history():
+    history.clear()
+    print("History cleared.")
+
+
+# Get input from the user
+num1 = get_float("Enter first number (or 'ans'): ")
+op = get_operation("choose operation (+, -, *, /, sqrt, sqr, power, %, percent, log): ")
+num2 = None
+if op not in SINGLE_ARG_OPS:
+    num2 = get_float("Enter second number (or 'ans'): ")
+
+result = do_calculation(num1, op, num2)
+print("Result:", result)
+if isinstance(result, (int, float)):
+    last_result = result
+
+recalculate = input("Do you want to perform another calculation? (yes/no/history/clear): ")
+while recalculate.lower() in ("yes", "history", "clear"):
     if recalculate.lower() == "history":
         show_history()
+    elif recalculate.lower() == "clear":
+        clear_history()
     else:
         num1 = get_float("Enter first number (or 'ans'): ")
         op = get_operation("enter operation: ")
         num2 = None
-        if op != "sqrt" and op != "sqr":
-            num2 = get_float("Enter first number (or 'ans'): ")
-        
-        result = do_calcutation(num1, op, num2)
-        print("Result", result)
+        if op not in SINGLE_ARG_OPS:
+            num2 = get_float("Enter second number (or 'ans'): ")
+
+        result = do_calculation(num1, op, num2)
+        print("Result:", result)
         if isinstance(result, (int, float)):
             last_result = result
 
+    recalculate = input("Do you want to perform another calculation? (yes/no/history/clear): ")
 
-    recalculate = input("Do you want to perform another calculation? (yes/no/history): ")
-    if recalculate.lower() == "no":
-        print("Thank you for using the calculator!")
-    else:
-        print("Invalid input. Exiting the calculator.")
+if recalculate.lower() == "no":
+    print("Thank you for using the calculator!")
+else:
+    print("Invalid input. Exiting the calculator.")
