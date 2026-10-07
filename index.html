@@ -245,16 +245,16 @@
   </div>
 
 <script>
-  // ---- DATA: the organizer updates this block and republishes the page ----
-  const DATA = {
-    target: 500000,
-    lastUpdated: "28/09/2026",
-    contributions: [
-      { name: "Helen Ogeh", amount: 30000, date: "11:30 AM 18/09/2026" },
-      { name: "Blessing Francis", amount: 38000, date: "11:27 AM 18/09/2026" },
-      { name: "Engr Bartholomew", amount: 200000, date: "11:28 AM 18/09/2026" },
-      { name: "Joy Iorfa", amount: 40000, date: "11:29 AM 18/09/2026" },
-    ]
+    // ---- DATA: fetched live from GitHub, no manual editing needed ----
+  const DATA_URL = "https://raw.githubusercontent.com/barthynarms/python-projects/master/data.json?t=" + Date.now();
+  // Adding "?t=" + Date.now() avoids the browser showing a stale cached copy.
+ 
+  // Fallback shown only if the live fetch fails (e.g. data.json doesn't exist yet).
+  const FALLBACK_DATA = {
+    target: 500000, 
+    lastUpdated: "—",
+    contributions: []
+
   };
   // ---------------------------------------------------------------------
 
@@ -262,53 +262,72 @@
     return "₦" + Number(n).toLocaleString("en-NG", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   }
 
-  const raised = DATA.contributions.reduce((sum, c) => sum + Number(c.amount || 0), 0);
-  const remaining = Math.max(DATA.target - raised, 0);
-  const percent = DATA.target > 0 ? Math.min((raised / DATA.target) * 100, 100) : 0;
-  const count = DATA.contributions.length;
-  const avg = count > 0 ? raised / count : 0;
-
-  document.getElementById("raisedAmount").textContent = formatNaira(raised);
-  document.getElementById("targetAmount").textContent = formatNaira(DATA.target);
-  document.getElementById("remainingAmount").textContent = formatNaira(remaining);
-  document.getElementById("percentLabel").textContent = percent.toFixed(1) + "% funded";
-  document.getElementById("barFill").style.width = percent + "%";
-  document.getElementById("memberCount").textContent = count;
-  document.getElementById("avgAmount").textContent = formatNaira(avg);
-  document.getElementById("lastUpdated").textContent = DATA.lastUpdated || "—";
-
-  const listEl = document.getElementById("contribList");
-  const emptyEl = document.getElementById("emptyState");
-
-  if (count === 0) {
-    emptyEl.style.display = "block";
-  } else {
-    const sorted = [...DATA.contributions].reverse(); // most recent first
-    sorted.forEach(c => {
-      const li = document.createElement("li");
-      const nameSpan = document.createElement("span");
-      nameSpan.className = "c-name";
-      nameSpan.textContent = c.name;
-
-      const right = document.createElement("span");
-      right.className = "c-right";
-
-      const amountSpan = document.createElement("span");
-      amountSpan.className = "c-amount";
-      amountSpan.textContent = formatNaira(c.amount);
-
-      const dateSpan = document.createElement("span");
-      dateSpan.className = "c-date";
-      dateSpan.textContent = c.date || "";
-
-      right.appendChild(amountSpan);
-      right.appendChild(dateSpan);
-
-      li.appendChild(nameSpan);
-      li.appendChild(right);
-      listEl.appendChild(li);
-    });
+ 
+  function renderPage(DATA) {
+    const raised = DATA.contributions.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+    const remaining = Math.max(DATA.target - raised, 0);
+    const percent = DATA.target > 0 ? Math.min((raised / DATA.target) * 100, 100) : 0;
+    const count = DATA.contributions.length;
+    const avg = count > 0 ? raised / count : 0;
+ 
+    document.getElementById("raisedAmount").textContent = formatNaira(raised);
+    document.getElementById("targetAmount").textContent = formatNaira(DATA.target);
+    document.getElementById("remainingAmount").textContent = formatNaira(remaining);
+    document.getElementById("percentLabel").textContent = percent.toFixed(1) + "% funded";
+    document.getElementById("barFill").style.width = percent + "%";
+    document.getElementById("memberCount").textContent = count;
+    document.getElementById("avgAmount").textContent = formatNaira(avg);
+    document.getElementById("lastUpdated").textContent = DATA.lastUpdated || "—";
+ 
+    const listEl = document.getElementById("contribList");
+    const emptyEl = document.getElementById("emptyState");
+    listEl.innerHTML = ""; // clear in case this runs more than once
+ 
+    if (count === 0) {
+      emptyEl.style.display = "block";
+    } else {
+      emptyEl.style.display = "none";
+      const sorted = [...DATA.contributions].reverse(); // most recent first
+      sorted.forEach(c => {
+        const li = document.createElement("li");
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "c-name";
+        nameSpan.textContent = c.name;
+ 
+        const right = document.createElement("span");
+        right.className = "c-right";
+ 
+        const amountSpan = document.createElement("span");
+        amountSpan.className = "c-amount";
+        amountSpan.textContent = formatNaira(c.amount);
+ 
+        const dateSpan = document.createElement("span");
+        dateSpan.className = "c-date";
+        dateSpan.textContent = c.date || "";
+ 
+        right.appendChild(amountSpan);
+        right.appendChild(dateSpan);
+ 
+        li.appendChild(nameSpan);
+        li.appendChild(right);
+        listEl.appendChild(li);
+      });
+    }
   }
+ 
+  // Try to fetch the live data from GitHub. If it fails for any reason
+  // (no internet, file doesn't exist yet, etc.), fall back gracefully
+  // instead of leaving the page blank.
+  fetch(DATA_URL)
+    .then(response => {
+      if (!response.ok) throw new Error("data.json not found yet");
+      return response.json();
+    })
+    .then(data => renderPage(data))
+    .catch(err => {
+      console.warn("Could not load live data, showing fallback:", err);
+      renderPage(FALLBACK_DATA);
+    });
 </script>
 </body>
 </html>

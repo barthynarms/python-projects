@@ -1,10 +1,14 @@
 import json
 import os
+import csv
 from datetime import datetime
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(SCRIPT_DIR, "contributions.json")
 target = 500000
+
+#this is the file the webpage reads, point it to my github Desktop
+WEB_DATA_FILE = os.path.join(SCRIPT_DIR, "data.json")
 
 def load_data():
     """Load saved contributions from file, if it exists.
@@ -14,23 +18,34 @@ def load_data():
         return []  # no file yet, start empty
  
     with open(DATA_FILE, "r") as f:
-        data = json.load(f)
- 
-    upgraded = []
-    for entry in data:
-        if isinstance(entry, dict):
-            upgraded.append(entry)
-        else:
-            # old format: [name, amount] with no date - add a placeholder date
-            name, amount = entry
-            upgraded.append({"name": name, "amount": amount, "date": "unknown"})
-    return upgraded
+        try:
+            data = json.load(f)
+        except json.JSONDecodeError:
+            return []   #file is empty or corrupted, start fresh
+    
+    if not isinstance(data, list):
+        return [] #file didn't contain a proper list, start fresh
 
+    return data
+ 
 
 def save_data(contributions):
-    """Save the current contributions list to file."""
+    #Save the current contributions list to file.
     with open(DATA_FILE, "w") as f:
         json.dump(contributions, f, indent=2)
+
+def save_web_data(contributions, raised, target):
+    """write the data, the webpage needs into data.json, in the same folder
+    Git repo is watching."""
+    payload = {
+        "target": target,
+        "last_updated": now_string(),
+        "contributions": contributions,
+    }
+    with open(WEB_DATA_FILE, "w") as f:
+        json.dump(payload, f, indent=2)
+    print ("📝 data.json updated - commit and push it to go live.")
+
 
 def now_string():
     """ return the current date and time as a readable string."""
@@ -60,6 +75,23 @@ def show_progress():
     print(f"[{bar}] {percent:.0f}%")
     print("=" * 45)
 
+def export_report():
+    #write all contributions to a CSV file the user can open in excel/sheets
+    filename = f"contributions_report_{datetime.now().strftime('%I:%M %p %d/%m/%Y')}.csv"
+    filepath = os.path.join(SCRIPT_DIR, filename)
+
+    with open(filepath, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["No.", "Name", "Amount", "Date"])
+        for i, entry in enumerate(contributions, start=1):
+            writer.writerow([i, entry["name"], entry["amount"], entry["date"]])
+        writer.writerow([])
+        writer.writerow(["Target", target])
+        writer.writerow(["Total Raised", raised])
+        writer.writerow(["Remaining", target - raised])
+        writer.writerow(["Total Members", len(contributions)])
+    return filepath
+
 def show_list():
     print("\n--- Contribution List ---")
     if not contributions:
@@ -77,8 +109,9 @@ while True:
     print("3. Show contributor list")
     print("4. Edit contribution")
     print("5. Delete a contribution")
-    print("6. Exit")
-    choice = input("\nSelect option (1-6): ").strip()
+    print("6. Export report (CSV)")
+    print("7. Exit")
+    choice = input("\nSelect option (1-7): ").strip()
 
     if choice == "1":
         name = input("Contributor name: ").strip()
@@ -134,6 +167,7 @@ while True:
             print(f"✅ Added ₦{amount:,.2f} from {name} on {timestamp}")
  
         save_data(contributions)
+        save_web_data(contributions, raised, target)
 
     elif choice == "2":
         show_progress()
@@ -182,6 +216,7 @@ while True:
         entry["amount"] = new_amount
         entry["date"] = now_string()
         save_data(contributions)
+        save_web_data(contributions, raised, target)
         print(f"✅ Entry {index} updated: {new_name} - ₦{new_amount:,.2f}")
     
     elif choice == "5":
@@ -207,10 +242,18 @@ while True:
         raised -= entry["amount"]
         contributions.pop(index - 1)
         save_data(contributions)
+        save_web_data(contributions, raised, target)
         print(f"🗑️ Deleted entry: {entry['name']} - ₦{entry['amount']:,.2f}")
-
+        
 
     elif choice == "6":
+        if not contributions:
+            print("No contributions to export yet.")
+            continue
+        filepath = export_report()
+        print(f"✅ Report_exported to: {filepath}")
+    
+    elif choice == "7":
         print("Exiting... Final summary:")
         show_list()
        
@@ -218,4 +261,4 @@ while True:
         break
 
     else:
-        print("Invalid option, please choose 1-6.")
+        print("Invalid option, please choose 1-7.")
